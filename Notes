@@ -2,6 +2,9 @@ https://net.cybbh.io/public/networking/latest/index.html
 http://10.50.20.162:8000/
 ROCR-002-W
 
+All of the things in one place:
+https://miro.com/app/board/o9J_klSqCSY=/
+
 ssh -X student@ 10.50.34.177
 X allows for GUI-based programming
 
@@ -103,68 +106,36 @@ X allows for GUI-based programming
             scp student@10.10.0.40:file .
             scp file student@10.10.0.40Host Discovery: 
 
- 
-
 Nmap Scan: 
-
 nmap -sn <ip_range_>/24 
 
- 
-
 ARP Scan: 
-
-Works if on the same subnet 
-
+Works if on the same subnethttps://miro.com/app/board/o9J_klSqCSY=/
 sudo nmap - PR -sn <targetIP> 
 
- 
-
 ARP-Scan: 
-
 sudo arp-scan  --localnet 
-
 sudo arp-scan -I eth0 -l 
 
- 
-
 Ping Scan: 
-
 nmap -PE -sn <targetIP/24> 
 
- 
-
 TCP SYN Ping: 
-
 sudo nmap -PS -sn <targetIP/24> 
 
- 
-
 TCP ACK Ping: 
-
 sudo nmap -PA -sn <targetIP/24> 
 
- 
-
 UDP Ping:  
-
 sudo nmap -PU -sn <targetIP/24> 
 
- 
-
 MassScan: 
-
 masscan MACHINE_IP/24 -p443 
-
 masscan MACHINE_IP/24 -p80,443 
-
 masscan MACHINE_IP/24 -p22-25 
-
 masscan MACHINE_IP/24 ‐‐top-ports 100 
 
- 
-
 NetDiscover: 
-
 netdiscover -r <IP_RANGE>/24     ---> Returns MACs, Hostnames :
         b. netcat
             nc 10.10.0.40 1234 < file
@@ -201,7 +172,270 @@ masscan MACHINE_IP/24 -p22-25
 masscan MACHINE_IP/24 ‐‐top-ports 100 
 NetDiscover: 
 netdiscover -r <IP_RANGE>/24     ---> Returns MACs, Hostnames 
+
+CTF Scans: 
+TCP: 
+sudo nmap -p- -A -vv 10.10.220.206 -oN ~/TCP_recon.nmap -T4 --min-rate 1000 --max-retries 3 
+UDP:  
+sudo nmap -p- -sU -vv <targetIP> -oN ~/UDP_recon.nmap -T4 --min-rate 1000 --max-retries 3 
+
+Basic Port Scans 
+Port Scan Type Example Command 
+TCP Connect Scan nmap -sT 10.10.149.197 
+TCP SYN Scan sudo nmap -sS 10.10.149.197 
+UDP Scan sudo nmap -sU 10.10.149.197 
+
+Option Purpose 
+-p- all ports 
+-p1-1023 scan ports 1 to 1023 
+-F 100 most common ports 
+-r scan ports in consecutive order 
+-T<0-5> -T0 being the slowest and T5 the fastest 
+--max-rate 50 rate <= 50 packets/sec 
+--min-rate 15 rate >= 15 packets/sec 
+--min-parallelism 100 at least 100 probes in parallel 
+Option Meaning 
+-sV determine service/version info on open ports 
+-sV --version-light try the most likely probes (2) 
+-sV --version-all try all available probes (9) 
+-O detect OS 
+--traceroute run traceroute to target 
+--script=SCRIPTS Nmap scripts to run 
+-sC or --script=default run default scripts 
+-A equivalent to -sV -O -sC --traceroute 
+-oN save output in normal format 
+-oG save output in grepable format 
+-oX save output in XML format 
+-oA save output in normal, XML and Grepable formats 
+-oS save output in Script Kiddie format 
+
+Netbios Scan Techniques: 
+nmap -p netbios*,microsoft-ds [target host] 
+sudo nmap -sU -sS -p U:137-139,T:137-139,445 [target host] 
+sudo nmap -sU -sS -p netbios*,microsoft-ds [target host] 
+
+Advanced Port Scans 
+Port Scan Type Example Command 
+TCP Null Scan sudo nmap -sN 10.10.90.13 
+TCP FIN Scan sudo nmap -sF 10.10.90.13 
+TCP Xmas Scan sudo nmap -sX 10.10.90.13 
+TCP Maimon Scan sudo nmap -sM 10.10.90.13 
+TCP ACK Scan sudo nmap -sA 10.10.90.13 
+TCP Window Scan sudo nmap -sW 10.10.90.13 
+Custom TCP Scan sudo nmap --scanflags URGACKPSHRSTSYNFIN 10.10.90.13 
+Spoofed Source IP sudo nmap -S SPOOFED_IP 10.10.90.13 
+Spoofed MAC Address --spoof-mac SPOOFED_MAC 
+Decoy Scan nmap -D DECOY_IP,ME 10.10.90.13 
+Idle (Zombie) Scan sudo nmap -sI ZOMBIE_IP 10.10.90.13 
+Fragment IP data into 8 bytes -f 
+Fragment IP data into 16 bytes -ff 
+
+Option Purpose 
+--source-port PORT_NUM specify source port number 
+--data-length NUM append random data to reach given length 
+--reason explains how Nmap made its conclusion 
+-v verbose 
+-vv very verbose 
+-d debugging 
+-dd more details for debugging 
+
 # once you have ssh into the INTERNET_HOST box:
 $ terminator
 $ pcmanfm
   opens a gui to navigate the file structure
+
+1. ARP Storm. What MAC address is initiating the ARP Storm?
+ws filter: arp
+look for a mac blasting out a bunch of arp requests
+Answer: 00:07:0d:af:f4:54
+
+2. ARP – 1. What is the MAC of 10.10.10.1?
+ws filter: ip.addr == 10.10.10.1
+look at the source to find the mac
+Answer:  00:1d:09:f0:92:ab
+
+3. ARP – 2. What is the MAC of 10.10.10.2?
+ws filter: ip.addr == 10.10.10.2
+look at the source to find the mac
+Answer: 00:1a:6b:6c:0c:cc
+
+4. ARP – 3. What is the MAC address of the system trying to perform the ARP MitM attack?
+ws filter: arp
+fa:16:3e:35:21:5a is claiming multiple ip addresses
+Answer: fa:16:3e:35:21:5a
+
+5. RARP – 1. What is the OP code of a RARP Request?
+https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml#arp-parameters-1
+Answer: 3
+
+6. RARP – 2. What is the OP code of a RARP Response?
+Answer: 4
+
+7. RARP – 3. What is the RARP requestor’s MAC?
+Answer: 00:0c:29:34:0b:de
+
+8. RARP – 4. What was the RARP requestor’s resolved IP address?
+Answer: 10.1.1.100
+
+9. Gratuitous ARP – 1. What is the MAC of the system spamming gratuitous ARP’s for 192.168.1.254?
+look for gratuitous arp requests in info
+Answer: 00:00:5e:00:01:01
+
+10. CDP – 1. What is the software version of the Cisco Switch (copy entire field “as is” from Wireshark)?
+ws filter: cdp
+Answer: IOS (tm) C2950 Software (C2950-I6K2L2Q4-M), Version 12.1(22)EA14, RELEASE SOFTWARE (fc1)
+
+11. CDP – 2. What is the software version of the Cisco Router (copy entire field “as is” from Wireshark)?
+ws filter: cdp
+Answer: IOS (tm) 1600 Software (C1600-NY-L), Version 11.2(12)P, RELEASE SOFTWARE (fc1)
+
+12. LLDP – 1. What is the System Name of one of the LLDP sending devices?
+ws filter: lldp
+answer: S1.cisco.com
+
+13. STP – 1. What is the Bridge Priority of the STP Root Bridge?
+ws filter: stp
+look in spanning tree protocol dropdown
+Answer: 0
+
+14. STP – 2. What is the MAC address of the STP Root Bridge?
+Answer: 00:1f:27:b4:7d:80
+
+15. VTP – 1. What is the VTP Management Domain Name?
+Answer: cicso
+
+16. VTP – 2. What is the latest configuration revision number?
+Answer: 11
+
+17. VTP – 3. How many total VLANs are being advertised via VTP?
+Answer: 22
+
+18. VLAN – 1. What is the message contained within the single tagged VLAN traffic coming from 11.22.33.44?
+filter for the ip and follow tcp stream
+Answer: I pitty the foo
+
+19. VLAN – 2. What is the VLAN ID of this traffic?
+Answer: 999
+
+20. VLAN Hopping – 1. What is the VLAN ID being attacked by 10.10.10.10 using Double Tagging?
+250
+
+21. VLAN Hopping – 2. What is the combined message being sent via ICMP?
+Answer: Wouldn't you like too be a Pepper Too!
+
+22. ICMP – 1. What is the OS of 192.168.1.1 host based off its Echo Request message to the Google DNS?
+TTL = 64
+Answer: linux
+
+23. ICMP – 2. What is the message that 192.168.65.20 sending to Google's DNS via ICMP?
+Answer: Exsqueeze me?
+
+24. ICMP – 3. How many Hops away is the 151.101.64.84 address?
+Answer: 11
+
+25. Fragmented – 1. What is the IP ID of the fragmented ICMP packet? (starting at packet 6472)
+Answer: 46544
+
+26. Fragmented – 2. What is the offset value of the fragments?
+    Not the calculated value shown in Wireshark
+    Suggest converting the value from the Hex Dump
+Answer: 122
+
+27. Fragmented – 3. What is the possible OS of the system that sent this ICMP based on the message payload?
+Answer: windows
+
+28. ICMPv6 – 1. What is the ICMPv6 type number of Echo Request?
+Answer: 128
+
+29. ICMPv6 – 2. What is the ICMPv6 type number of Echo Reply?
+Answer: 129
+
+30. ICMPv6 – 3. What is the ICMPv6 type number of the Router Advertisement message?
+134
+
+31. ICMPv6 – 4. What is the link-layer address of the advertising router?
+Answer: fa:16:3e:35:21:5a
+
+32. ICMPv6 – 5. What is the IPv6 prefix being advertised?
+Answer: beef:4:f00d::
+
+33. HSRP – 1. What is the HSRP virtual IP?
+Answer: 192.168.0.1
+
+34. HSRP – 2. What is the HSRP multicast address used?
+Answer: 224.0.0.2
+
+35. HSRP – 3. What is the IP address of the HSRP Active forwarder (before the takeover)?
+Answer: 192.168.0.30
+
+36. HSRP – 4. What is the IP address of the HSRP Active forwarder (after the takeover)?
+Answer: 192.168.0.10
+
+37. VRRP – 1. What is the VRRP multicast address used?
+Answer: 224.0.0.18
+
+38. VRRP – 2. What is the VRRP virtual IP?
+Answer: 192.168.1.254
+
+39. VRRP – 3. How many total devices are communicating via VRRP?
+Answer: 3
+
+40. RIP – 1. How many networks are being advertised via RIP?
+Answer: 2
+
+41. RIP – 2. What are the networks being advertised (in numeric order separated by commas and no spaces)?
+(i.e. 1.0.0.0,2.0.0.0 )
+Answer: 200.0.1.0,200.0.2.0
+
+42. RIP – 3. What Protocol and port is being used for RIP?
+Transport PROTOCOL PORT
+Answer: UDP 520
+
+43. EIGRPv4 – 1. What network is being advertised via EIGRPv4
+Answer: 192.168.4.0/24
+
+44. EIGRPv4 – 2. What is the IP protocol number used for EIGRP?
+Answer: 88
+
+45. EIGRPv4 – 3. What multicast address is used to send EIGRPv4 updates?
+Answer: 224.0.0.10
+
+46. EIGRPv6 – 1. What network is being advertised via EIGRPv6
+Answer: 2001:db8:0:400::/64
+
+47. EIGRPv6 – 2. What multicast address is used to send EIGRPv6 updates?
+Answer: ff02::a
+
+48. EIGRPv6 – 3. What Autonomous system number is being used?
+Answer: 100
+
+49. OSPF – 1. What is the IP protocol number used for OSPF?
+Answer: 89
+
+50. OSPF – 2. What is the IP address of the OSPF designated router (DR)?
+Answer: 192.168.170.8
+
+51. OSPF – 3. What multicast address is used by the DR to send updates?
+Answer: 224.0.0.5
+
+52. BGP – 1. How many networks are being advertised via BGP?
+
+54. BGP – 3. What Autonomous system number is the 192.168.0.10 peer in?
+Answer: 62510 
+
+55. BGP – 4. What Protocol and port is being used for BGP?
+Transport PROTOCOL PORT
+Answer: TCP 179
+
+52. BGP – 1. How many networks are being advertised via BGP?
+Answer: 3
+
+53. BGP – 2. What are the networks being advertised (in numeric order separated by commas and no spaces)?
+(i.e. 1.0.0.0,2.0.0.0)
+Answer: 10.0.0.0/8,172.16.0.0/16,192.168.4.0/22
+
+
+
+
+
+
