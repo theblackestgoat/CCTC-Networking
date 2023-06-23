@@ -611,6 +611,15 @@ Answer: rfc1350.txt
 55. TFTP – 3. How many TFTP “Blocks” were used to send the file?
 Answer: 49
 
+TCPDUMP
+sudo tcpdump -i eth0 -XXvnn -w file.pcap
+sudo tcpdump -r file.pcap
+
+N3tw0rkBPF
+
+Basic Analysis - ttl. What is the Berkeley Packet Filter, using tcpdump, to capture all packets with a ttl of 64 and less, utilizing the IPv4 or IPv6 Headers? There should be 8508 packets.
+Enter the Filter syntax with no spaces
+tcpdump "
 
 
 
