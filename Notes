@@ -619,39 +619,149 @@ N3tw0rkBPF
 
 Basic Analysis - ttl. What is the Berkeley Packet Filter, using tcpdump, to capture all packets with a ttl of 64 and less, utilizing the IPv4 or IPv6 Headers? There should be 8508 packets.
 Enter the Filter syntax with no spaces
-tcpdump "
+$ sudo tcpdump 'ip[8] <= 64 || ip6[7] <= 64' -r BPFCheck.pcap | wc -l
+ip[8] refers to the TTL field within the IPv4 header. The TTL field is located at byte offset 8 in the IP header.
+ip6[7] refers to the Hop Limit field within the IPv6 header. The Hop Limit field is located at byte offset 7 in the IPv6 header.
+The expression <= 64 checks if the TTL or Hop Limit is less than or equal to 64, which matches packets with a TTL value of 64 and lower.
+Answer: ip[8]<=64||ip6[7]<=64
 
+Basic Analysis - dont fragment. What is the Berkeley Packet Filter, using tcpdump, to capture all IPv4 packets with at least the Dont Fragment bit set? There should be 2321 packets.
+tcpdump -i <interface> 'ip[6] & 0x4000 != 0'
+Let's break down the filter expression:
+ip[6] refers to the 7th byte (offset 6) in the IPv4 header, which contains the "Flags" field.
+& 0x4000 performs a bitwise AND operation with the value 0x4000, which corresponds to the DF bit.
+!= 0 checks if the result of the bitwise AND operation is not equal to 0, indicating that the DF bit is set.
+sudo tcpdump 'ip[6] & 0x40 != 0' -r BPFCheck.pcap | wc -l
+Answer: ip[6]&0x40!=0
 
+Basic Analysis - high port. What is the Berkeley Packet Filter, using tcpdump, to capture traffic with a Source Port higher than 1024, utilizing the correct Transport Layer Headers? There should be 7805 packets.
+tcpdump -i <interface> '((tcp[0:2] > 1024) or (udp[0:2] > 1024))'
+tcp[0:2] represents the first two bytes of the TCP header, which include the source port field.
+udp[0:2] represents the first two bytes of the UDP header, which also include the source port field.
+> is the greater-than operator.
+1024 is the value representing the port number threshold
+sudo tcpdump '((tcp[0:2] > 1024) || (udp[0:2] > 1024))' -r BPFCheck.pcap | wc -l
+Answer: tcp[0:2]>1024||udp[0:2]>1024
 
+Basic Analysis - udp. What is the Berkeley Packet Filter, using tcpdump, to capture all Packets with UDP protocol being set, utilizing the IPv4 or IPv6 Headers? There should be 1277 packets.
+sudo tcpdump 'udp' -r BPFCheck.pcap | wc -l (while this works, it doesn't specify which bit/byte to use to reference "protocol"
+sudo tcpdump 'ip[9] = 17 || ip6[6] = 17' -r BPFCheck.pcap | wc -l
+For IPv4:
+ip[9] refers to the 10th byte (offset 9) in the IPv4 header, which contains the "Protocol" field.
+= 17 checks if the value of the "Protocol" field is equal to 17, which corresponds to the UDP protocol.
+For IPv6:
+ip6[6] refers to the 7th byte (offset 6) in the IPv6 header, which contains the "Next Header" field.
+= 17 checks if the value of the "Next Header" field is equal to 17, which corresponds to the UDP protocol.
+Answer: ip[9]=17||ip6[6]=17
 
+Basic Analysis - tcp flags. What is the Berkeley Packet Filter, using tcpdump, to capture only packets with the ACK/RST or ACK/FIN flag set, utilizing the correct Transport Layer Header? There should be 1201 packets.
+tcpdump -i <interface> 'tcp[13] & 0x15 != 0'
+Let's break down the filter expression:
+tcp[13] refers to the 14th byte (offset 13) in the TCP header, which contains the TCP flags field.
+& 0x15 performs a bitwise AND operation with the value 0x15, which corresponds to the combination of the ACK and RST or ACK and FIN flags.
+!= 0 checks if the result of the bitwise AND operation is not equal to 0, indicating that either the ACK/RST or ACK/FIN flags are set.
+Answer:
 
+Basic Analysis - id. What is the Berkeley Packet Filter, using tcpdump, to capture all packets with an IP ID field of 213? There should be 10 packets.
+sudo tcpdump 'ip[4:2] = 213' -r BPFCheck.pcap | wc -l 
+ip[4:2] refers to bytes 5 and 6 (offset 4 to 5) in the IP header, which contain the IP ID field.
+= 213 checks if the value of the IP ID field is equal to 213.
+Answer" ip[4:2]=213
 
+Basic Analysis - vlan. What is the Berkeley Packet Filter, using tcpdump, to capture all traffic that contains a VLAN tag? There should be 182 packets.
+sudo tcpdump 'vlan' -r BPFCheck.pcap | wc -l (this works but isn't the right answer)
+sudo tcpdump 'ether proto 0x8100' -r BPFCheck.pcap | wc -l (this also works but isn't the right answer)
+ether proto 0x8100 specifies the Ethernet protocol field (EtherType) as 0x8100, which indicates the presence of a VLAN tag using the 802.1Q frame format.
+sudo tcpdump 'ether[12:2] = 0x8100' -r BPFCheck.pcap | wc -l
+ether[12:2] refers to bytes 13 and 14 (offset 12 to 13) in the Ethernet header, which contain the EtherType field.
+= 0x8100 checks if the value of the EtherType field is equal to 0x8100, which indicates the presence of a VLAN tag using the 802.1Q frame format.
+Answer: ether[12:2]=0x8100
 
+Basic Analysis - dns. What is the Berkeley Packet Filter, using tcpdump, to capture all IPv4 packets relating to DNS? There should be 63 packets.
+sudo tcpdump 'tcp[2:2]=53||tcp[0:2]=53||udp[2:2]=53||udp[0:2]=53' -r BPFCheck.pcap | wc -l 
+Answer: tcp[2:2]=53||tcp[0:2]=53||udp[2:2]=53||udp[0:2]=53
 
+Basic Analysis - CLIENT CONNECTIONS. What is the Berkeley Packet Filter, using tcpdump, to capture the initial packets from a client trying to initiate a TCP connection? There should be 3447 packets
+tcpdump -i <interface> 'tcp[13] & 2 != 0 and tcp[13] & 16 = 0' (this does not give the right answer)
+tcp[13] & 2 != 0 checks if the 14th byte (offset 13) in the TCP header has the second bit (SYN flag) set. This filters for packets that contain the SYN flag, indicating a request to establish a TCP connection.
+tcp[13] & 16 = 0 checks if the 14th byte (offset 13) in the TCP header has the fifth bit (ACK flag) unset. This filters for packets where the ACK flag is not set, indicating the initial packet of the TCP handshake.
 
+Basic Analysis - OPEN PORTS. What is the Berkeley Packet Filter, using tcpdump, to capture the response packets from a server listening on an open TCP ports? There should be 277 packets
+tcpdump -i <interface> 'tcp[13] & 2 = 2 and tcp[13] & 18 = 18'
+tcp[13] & 2 = 2 checks if the 14th byte (offset 13) in the TCP header has the second bit (SYN flag) set. This filters for packets that have the SYN flag turned on.
+tcp[13] & 18 = 18 checks if the 14th byte (offset 13) in the TCP header has both the second bit (SYN flag) and the fourth bit (ACK flag) set. This filters for packets that have both the SYN and SYN+ACK flags turned on.
+Answer: tcp[13]&2=2&&tcp[13]&18=18 (this does not work for some reason)
 
+Basic Analysis - CLOSED PORTS. What is the Berkeley Packet Filter, using tcpdump, to capture the response packets from a server with closed TCP ports There should be 17 packets
 
+Basic Analysis - WELL KNOWN PORTS.What is the Berkeley Packet Filter, using tcpdump, to capture all TCP and UDP packets sent to the well known ports? There should be 3678 packets
+sudo tcpdump 'tcp[2:2]<=1023||udp[2:2]<=1023' -r BPFCheck.pcap | wc -l  
+Answer: tcp[2:2]<=1023||udp[2:2]<=1023
 
+Basic Analysis - HTTP. What is the Berkeley Packet Filter, using tcpdump, to capture all HTTP traffic? There should be 1404 packets
+sudo tcpdump 'tcp[2:2]=80||tcp[0:2]=80' -r BPFCheck.pcap | wc -l 
+Answer: tcp[2:2]=80||tcp[0:2]=80
 
+Basic Analysis - TELNET. What is the Berkeley Packet Filter, using tcpdump, to capture all telnet traffic? There should be 62 packets
+sudo tcpdump 'tcp[2:2]=23||tcp[0:2]=23' -r BPFCheck.pcap | wc -l
+Answer: tcp[2:2]=23||tcp[0:2]=23
 
+Basic Analysis - ARP. What is the Berkeley Packet Filter, using tcpdump, to capture all ARP traffic? There should be 40 packets
+sudo tcpdump 'arp' -r BPFCheck.pcap | wc -l  (this works but is not the right answer)
+sudo tcpdump 'ether[12:2] = 0x0806' -r BPFCheck.pcap | wc -l
+Answer: ether[12:2]=0x0806
 
+Basic Analysis - TOTAL CHAOS. What is the Berkeley Packet Filter, using tcpdump, to capture any packets containing the CHAOS protocol within an IPv4 header? There should be 139 packets
+Need to figure out which protocol number CHAOS uses:
+https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml#J_Noel_Chiappa
+CHAOS = 16
+sudo tcpdump 'ip[9] = 16' -r BPFCheck.pcap | wc -l
+Answer: ip[9]=16
 
+Basic Analysis - dscp. What is the Berkeley Packet Filter, using tcpdump, to capture all IPv4 packets with the DSCP field of 37? There should be 42 packets.
+sudo tcpdump 'ip[1] >> 2 = 37'
+ip[1] refers to the second byte (offset 1) in the IPv4 header, which contains the Type of Service (ToS) field that includes the DSCP bits.
+>> 2 performs a right shift by 2 bits, which effectively discards the first 2 bits (precedence bits) of the ToS field, leaving only the DSCP bits.
+= 37 checks if the resulting value is equal to 37, indicating that the DSCP field is set to 37.
+Answer: ip[1]>>2=37
 
+Basic Analysis - traceroute. What is the Berkeley Packet Filter, using tcpdump, to capture all IPv4 packets targeting just the beginning of potential traceroutes as it's entering your network. This can be from a Windows or Linux machine using their default settings? There should be 83 packets.
+sudo tcpdump '(udp||icmp[0]=8)&&ip[8]=1' -r BPFCheck.pcap | wc -l (this works but doesn't count as correct)
+ip[8] = 1 checks if the TTL field in the IP header is equal to 1.
+(icmp[0] = 8 and ip[8] = 1) checks if the ICMP type field is equal to 8 (ICMP Echo Request) and the TTL field in the IP header is equal to 1.
+udp captures all UDP packets.
+(udp||icmp[0]=8)&&ip[8]=1
+sudo tcpdump '(ip[9]=17||icmp[0]=8)&&ip[8]=1' -r BPFCheck.pcap | wc -l
+ip[9] refers to the tenth byte (offset 9) in the IP header, which contains the Protocol field.
+= 17 checks if the Protocol field is equal to 17, which is the assigned value for UDP.
+Answer: ????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 
+Basic Analysis - URGent EXFIL. What is the Berkeley Packet Filter, using tcpdump, to capture all packets where the URG flag is not set and URG pointer has a value? There should be 43 packets
+sudo tcpdump 'tcp[13] & 32 = 0 and tcp[18:2] != 0' -r BPFCheck.pcap | wc -l
+tcp[13] refers to the fourteenth byte (offset 13) in the TCP header, which contains the TCP flags field.
+& 32 performs a bitwise AND operation with the value 32 (binary 00100000) to check if the URG flag is not set. If the result is zero, it means the URG flag is not set.
+tcp[18:2] refers to the nineteenth and twentieth bytes (offset 18 to 19) in the TCP header, which contain the URG pointer field.
+!= 0 checks if the URG pointer field has a non-zero value.
+Answer: tcp[13]&32=0&&tcp[18:2]!=0
 
+Basic Analysis - NULL SCAN. What is the Berkeley Packet Filter, using tcpdump, to capture a TCP null scan to the host 10.10.10.10? There should be 19 packets
+sudo tcpdump 'tcp[13] & 63 = 0 and dst host 10.10.10.10' -r BPFCheck.pcap | wc -l
+tcp[13] refers to the fourteenth byte (offset 13) in the TCP header, which contains the TCP flags field.
+& 63 performs a bitwise AND operation with the value 63 (binary 00111111) to check if no TCP flags are set. If the result is zero, it means no TCP flags are set, indicating a null scan.
+dst host 10.10.10.10 specifies the destination IP address as 10.10.10.10.
+sudo tcpdump 'tcp[13] & 63 = 0 and ip[16:4] = 0x0a0a0a0a' -r BPFCheck.pcap | wc -l (also works but this is wrong)
+Answer: tcp[13]&63=0&&ip[16:4]=0x0a0a0a0a ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 
-
-
-
-
-
-
-
-
-
-
-
-
+Basic Analysis - VLAN HOPPING. What is the Berkeley Packet Filter, using tcpdump, to capture an attacker using vlan hopping to move from vlan 1 to vlan 10? There should be 15 packets
+ether[14:2] = 0x810a and (vlan or (ether[16:2] = 0x0001 and ether[18:2] = 0x000a))
+ether[14:2] = 0x810a checks if the EtherType field of the Ethernet header is 0x810a, which represents a VLAN-tagged frame.
+vlan checks for packets with VLAN tags.
+(ether[16:2] = 0x0001 and ether[18:2] = 0x000a) checks if the source VLAN ID is 1 and the destination VLAN ID is 10.
+sudo tcpdump 'ether[14:2] = 0x8100 and vlan and ether[18:2] = 0x8100
+ether[14:2] = 0x8100 checks if the EtherType field of the Ethernet header is 0x8100, indicating the presence of the first VLAN tag.
+vlan checks for packets with at least one VLAN tag.
+ether[18:2] = 0x8100 checks if the EtherType field at an offset of 18 bytes in the Ethernet header is 0x8100, indicating the presence of the second VLAN tag.
+20:22:48.381359 IP 192.168.0.1 > 255.255.255.255: ICMP echo request, id 0, seq 0, length 8 <-- this is definitely one of the packets that we want
 
 
 
