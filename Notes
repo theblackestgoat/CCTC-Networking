@@ -660,7 +660,8 @@ Let's break down the filter expression:
 tcp[13] refers to the 14th byte (offset 13) in the TCP header, which contains the TCP flags field.
 & 0x15 performs a bitwise AND operation with the value 0x15, which corresponds to the combination of the ACK and RST or ACK and FIN flags.
 != 0 checks if the result of the bitwise AND operation is not equal to 0, indicating that either the ACK/RST or ACK/FIN flags are set.
-Answer:
+sudo tcpdump 'tcp[13]=20||tcp[13]=17' -r BPFCheck.pcap | wc -l
+Answer: tcp[13]=20||tcp[13]=17
 
 Basic Analysis - id. What is the Berkeley Packet Filter, using tcpdump, to capture all packets with an IP ID field of 213? There should be 10 packets.
 sudo tcpdump 'ip[4:2] = 213' -r BPFCheck.pcap | wc -l 
@@ -685,14 +686,16 @@ Basic Analysis - CLIENT CONNECTIONS. What is the Berkeley Packet Filter, using t
 tcpdump -i <interface> 'tcp[13] & 2 != 0 and tcp[13] & 16 = 0' (this does not give the right answer)
 tcp[13] & 2 != 0 checks if the 14th byte (offset 13) in the TCP header has the second bit (SYN flag) set. This filters for packets that contain the SYN flag, indicating a request to establish a TCP connection.
 tcp[13] & 16 = 0 checks if the 14th byte (offset 13) in the TCP header has the fifth bit (ACK flag) unset. This filters for packets where the ACK flag is not set, indicating the initial packet of the TCP handshake.
+Answer: sudo tcpdump 'tcp[13]=2' -r BPFCheck.pcap | wc -l
 
 Basic Analysis - OPEN PORTS. What is the Berkeley Packet Filter, using tcpdump, to capture the response packets from a server listening on an open TCP ports? There should be 277 packets
 tcpdump -i <interface> 'tcp[13] & 2 = 2 and tcp[13] & 18 = 18'
 tcp[13] & 2 = 2 checks if the 14th byte (offset 13) in the TCP header has the second bit (SYN flag) set. This filters for packets that have the SYN flag turned on.
 tcp[13] & 18 = 18 checks if the 14th byte (offset 13) in the TCP header has both the second bit (SYN flag) and the fourth bit (ACK flag) set. This filters for packets that have both the SYN and SYN+ACK flags turned on.
-Answer: tcp[13]&2=2&&tcp[13]&18=18 (this does not work for some reason)
+Answer: tcp[13]=18
 
 Basic Analysis - CLOSED PORTS. What is the Berkeley Packet Filter, using tcpdump, to capture the response packets from a server with closed TCP ports There should be 17 packets
+Answer: tcp[13]=4
 
 Basic Analysis - WELL KNOWN PORTS.What is the Berkeley Packet Filter, using tcpdump, to capture all TCP and UDP packets sent to the well known ports? There should be 3678 packets
 sudo tcpdump 'tcp[2:2]<=1023||udp[2:2]<=1023' -r BPFCheck.pcap | wc -l  
@@ -750,7 +753,7 @@ tcp[13] refers to the fourteenth byte (offset 13) in the TCP header, which conta
 & 63 performs a bitwise AND operation with the value 63 (binary 00111111) to check if no TCP flags are set. If the result is zero, it means no TCP flags are set, indicating a null scan.
 dst host 10.10.10.10 specifies the destination IP address as 10.10.10.10.
 sudo tcpdump 'tcp[13] & 63 = 0 and ip[16:4] = 0x0a0a0a0a' -r BPFCheck.pcap | wc -l (also works but this is wrong)
-Answer: tcp[13]&63=0&&ip[16:4]=0x0a0a0a0a ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+Answer: tcp[13]=0&&ip[16:4]=0x0a0a0a0a 
 
 Basic Analysis - VLAN HOPPING. What is the Berkeley Packet Filter, using tcpdump, to capture an attacker using vlan hopping to move from vlan 1 to vlan 10? There should be 15 packets
 ether[14:2] = 0x810a and (vlan or (ether[16:2] = 0x0001 and ether[18:2] = 0x000a))
