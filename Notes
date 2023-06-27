@@ -1,4 +1,4 @@
-https://net.cybbh.io/public/networking/latest/index.html
+orkhttps://net.cybbh.io/public/networking/latest/index.html
 http://10.50.20.162:8000/
 ROCR-002-W
 
@@ -1339,9 +1339,41 @@ packet = ip_header + hidden_msg
 s.sendto(packet, (dst_ip, 0))
 
 
+Network Reconnaissance
+start flag: ready_set_scan
+dig - discover records
+dig www.google.com A/mx/txt/aaaa/
 
+whois
 
+nc 172.16.82.106
+wget -r ftp://172.16.82.106
+find / *.flag 2&>/dev/null
+VyOS username: vyos password: password
+use shodan for router
+the map
+hostnames
+ips/cider
+macs
+interfaces
+$ for i in {96..127}; do ping -c 1 172.16.182.$i;done |egrep 'bytes from'
+64 bytes from 172.16.182.106: icmp_seq=1 ttl=59 time=2.56 ms
+64 bytes from 172.16.182.110: icmp_seq=1 ttl=59 time=3.15 ms
+64 bytes from 172.16.182.114: icmp_seq=1 ttl=59 time=2.94 ms
+64 bytes from 172.16.182.118: icmp_seq=1 ttl=59 time=3.73 ms
+64 bytes from 172.16.182.126: icmp_seq=1 ttl=60 time=1.99 ms
 
+router
+IP: 172.16.120.1
+Ports: 22
+Username: vyos
+Password: password
+
+1. Donovian Boundary. Utilizing the intelligence already provided, what is it’s hostname of their boundary router?
+example: student@HOSTNAME-student-1
+Copy only the name where HOSTNAME is at.
+Going forward, you will need to use Vyos CLI commands to continue looking at what the routers know about. The reference is in Section 3 in your Student Resources.
+Answer: RED-SCR
 
 
 
