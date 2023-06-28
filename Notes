@@ -1377,3 +1377,157 @@ Answer: RED-SCR
 
 
 
+Data transfer, Movement, and Redirection
+
+<cmd> <from> <to>
+pull
+scp student@ip:stuff.txt /home/student
+upload
+scp stuff.txt student@ip:/home/student
+copy remote to remote
+scp -3 student1@ip1:/home/student/stuff.txt student2@ip2:/home/student
+
+SCP syntax with alternate SSHD
+download a file from a remote directory to a local directory
+scp -P 1111 student@ip:stuff.txt /home/student
+upload 
+scp -P 1111 stuff.txt student@ip:/home/student
+
+scp syntax through a tunnel
+set up a listening port
+authenticate to box, -L for localport:localhost, -NT for don't execute remote command and disable pseudo terminal
+ssh student@ip -L 1111:localhost:22 -NT
+
+ssh -p 1111 student@ip
+
+check arp cache
+ip nei
+
+port forward
+(instead of using local host, target a box behind what you can access)
+ssh student@ip -L 1111:192.168.1.10:22 -NT
+
+on the "middle" box
+ssh -p 1111 student@localhost
+this should get you into the distant box
+
+traffic redirection
+
+netcat
+inbound/outbount tcp/udp to from any ports
+troubleshoot network connections
+send/receive data (insecure)
+prot scanning (like -sT in Nmap)
+can not be used for port forwarding
+
+client to listener file transffer
+client sends file: nc 10.10.0.40 9001 < file.txt (transfers the content of the file, not the entire file to include the name)
+listener receives file: nc -l -p 9001 > newfile.txt
+(listener has to be set up first!)
+
+NETCAT Relay Demos
+On Client Relay:
+mknod mypipe p
+nc 10.1.0.2 9002 0< mypipe | nc 10.2.0.2 9001 1> mypipe
+On Listener2 (sends info):
+nc -l -p 9002 < infile.txt
+On Listener1 (receives info):
+nc -l -p 9001 > outfile.txt
+Writes the output to listener1 and listener2 through the named pipe 
+
+mknod PIPE1 p
+or
+mkfifo PIPE2
+
+ssh
+ssh -p <optional port> <user>@<pivot IP> -L <local bind port>
+or
+ssh -L  <local bind port>:<tgt ip>:<tgt port> -p <alt port> <user>@<pivot ip> -NT
+
+-L localhost:localport:TGTip:tgtport
+
+local port forwarding
+ssh student@ip -L 1111:ip:80 -NT (when specifying a specific port, you can only do those kinds of things 80 = http)
+or
+ssh -L 1111:ip:80 student@ip -NT
+
+ssh student@10.2.0.2 -L 1111:10.3.0.2:22 -NT
+ssh student@localhost -p 1111 -L 2222:34.233.98.14:80 -NT
+firefox localhost:2222
+#creates an additional local port on the local host that forwards to a target machine through the prevous channel created.
+
+Dynamic Port Forwarding
+Allows you to take your tools with you while you tunnel
+ssh -D <port> -p <alt port> <user>@<pivot ip> -NT
+proxychains default port is 9050
+creates a dynamic socks4 proxy that interacts alone, or with a previously established remote or local port forward.
+Allows the user of scripts and other userspace programs through the tunnel.
+*****Need to supress nmap icmp. (namp -Pn)*****
+Can't run local commands (ip addr) through dynamic. 
+ex:
+net1:
+ssh student@10.2.0.2 -L 1111:10.3.0.2:2222 -NT
+ssh student@localhost -D 9050 -p 1111 -NT
+proxychains curl ftp://www.onlineftp.ch
+proxychains wget -r www.espn.com
+proxychains ./scan.sh
+proxychains ssh user@192.0.2.100 -p 2022
+
+Task 1
+
+T1
+Hostname: INTERNET_HOST
+External IP: 10.50.XXX.XXX (ALREADY PROVIDED) Internal IP: 10.10.0.40 (ALREADY PROVIDED) (accessed via FLOAT IP)
+creds: (ALREADY PROVIDED)
+Action: Successfully transfer file data between hosts via Netcat
+
+T2
+Hostname: BLUE_HOST-4
+IP: 172.16.82.115
+creds: (NONE)
+Action: Successfully transfer files from this host using Netcat
+
+RELAY
+Hostname: BLUE_INT_DMZ_HOST-1
+IP: 172.16.40.10
+creds: (ALREADY PROVIDED)
+Action: Successfully transfer file data between hosts via Netcat
+
+on host, set up listener
+nc -l -p 5555 > steg1
+on relay
+make a pipe
+nc -l -p 1234 < mypipe | nc 10.10.0.40 5555 > mypipe 
+on host, wait for the file to transfer then 
+ls -l
+steghide extrace -sf steg1
+md5sum on the extracted file to get the hash and submit the flag
+
+3&4
+on int-dmz (relay)
+nc 10.10.0.40 6666 < mypipe | nc 172.16.82.115 9876 > mypipe
+on host
+nc -lvp 6666 > 4steg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
