@@ -1733,11 +1733,99 @@ Attack Analysis Credentials: FLAG = cyb3r_nuk35
 
 
 
+NFTABLES
+nft add table [family] [table]
+ntf add chain [family] [table] [chain] { type [type] hook [hook] priority [priority] \; policy [policy]\; }
+net add rule [family] [table] [chain] [matches (matches)] 
+
+example
+sudo nft add table ip TABLE1
+sudo nft add chain ip TABLE1 FILTER1 { type filter hook input priority 0 \; policy accept \; }
+sudo nft add rule ip TABLE1 FILTER1 tcp sport {ssh, telnet, 3389, 6010-6050} ct state {new, established} accept 
+
+sudo nft add chain ip Tthis_whole_ids_is_out_of_lineABLE1 FILTER2 { type filter hook output priority 0 \; policy accept \; }
+sudo nft add rule ip TABLE1 FILTER2 tcp dport {ssh, telnet, 3389, 6010-6050} ct space {new, established} accept
 
 
 
+how to change TTL
+sudo iptables -t mangle -L
+sudo iptables -t mangle -A POSTROUTING -j TTL --ttl -set 255
+sudo iptables -t mangle -D POSTROUTING 1
+
+Task 1 IP/NFTables - Host Filtering: T@bl3sth@tF1lt3r
+
+IP/NFTables - Filtering T1
+IPTable Rule Definitions
+    Allow New and Established traffic to/from via SSH, TELNET, and RDP
+    Change the Default Policy in the Filter Table for the INPUT, OUTPUT, and FORWARD chains to DROP
+    Allow ping (ICMP) requests to and from the Pivot.
+    Allow ports 6579 and 4444 for both udp and tcp traffic
+    Allow New and Established traffic to/from via HTTP
+Once these steps have been completed and tested, go to Pivot and open up a netcat listener on port 9001 and wait up to 2 minutes for your flag. If you did not successfully accomplish the tasks above, then you will not receive the flag.
+T1
+Hostname: BLUE_Host-1
+IP: 172.16.82.106
+Creds: student : password
+Action: Implement Host Filtering to Allow and Restrict Communications and Traffic
+
+sudo iptables -A INPUT -p tcp -m multiport --ports 22,23,80,3389 -m state --state NEW,ESTABLISHED -j ACCEPT
+sudo iptables -A INPUT -s 10.10.0.40 -p icmp --icmp-type 8 -j ACCEPT
+sudo iptables -A INPUT -s 10.10.0.40 -p icmp --icmp-type 0 -j ACCEPT
+sudo iptables -A INPUT -d 10.10.0.40 -p icmp --icmp-type 8 -j ACCEPT
+sudo iptables -A INPUT -d 10.10.0.40 -p icmp --icmp-type 0 -j ACCEPT
+sudo iptables -A INPUT -p udp -p tcp -m multiport --ports 6579,4444
+sudo iptables -A OUTPUT -p tcp -m multiport --ports 22,23,80,3389 -m state --state NEW,ESTABLISHED -j ACCEPT
+sudo iptables -A OUTPUT -s 10.10.0.40 -p icmp --icmp-type 8 -j ACCEPT
+sudo iptables -A OUTPUT -s 10.10.0.40 -p icmp --icmp-type 0 -j ACCEPT
+sudo iptables -A OUTPUT -d 10.10.0.40 -p icmp --icmp-type 8 -j ACCEPT
+sudo iptables -A OUTPUT -d 10.10.0.40 -p icmp --icmp-type 0 -j ACCEPT
+sudo iptables -A OUTPUT -p udp -p tcp -m multiport --ports 6579,4444
+sudo iptables -P INPUT DROP
+sudo iptables -P OUTPUT DROP
+sudo iptables -P FORWARD DROP
 
 
+IP/NFTables - Filtering T3
+IPTable Rule Definitions
+    Allow New and Established traffic to/from via SSH, TELNET, and RDP
+    Change the Default Policy in the Filter Table for the INPUT, OUTPUT, and FORWARD chains to DROP
+    Allow New and Established traffic to/from via HTTP
+Once these steps have been completed and tested, go to Pivot and open up a netcat listener on port 9003 and wait up to 2 minutes for your flag. If you did not successfully accomplish the tasks above, then you will not receive the flag.
+
+sudo iptables -A INPUT -p tcp -m multiport --ports 22,23,80,3389 -m state --state NEW,ESTABLISHED -j ACCEPT
+sudo iptables -P INPUT DROP
+sudo iptables -P OUTPUT DROP
+sudo iptables -P FORWARD DROP
+
+
+Task 2 IP/NFTables - NAT: N@tF1lt3rsf0rL1f3
+
+sudo shutdown -r 5
+
+
+SNORT!
+start snort
+root@internet-host-student-12:/home/student# snort -D -l /var/log/snort/ -c /etc/snort/snort.conf
+
+check to see if snort is running
+root@internet-host-student-12:/home/student# ps -elf | grep snort
+5 S root     13459     1  0  80   0 - 17157 x64_sy 13:46 ?        00:00:00 snort -D -l /var/log/snort/ -c /etc/snort/snort.conf
+0 S root     13475 13443  0  80   0 -  1535 -      13:46 pts/1    00:00:00 grep snort
+
+make sure that snort is logging
+root@internet-host-student-12:/home/student# cd /var/log/snort
+root@internet-host-student-12:/var/log/snort# ls
+alert  snort.log.1688737570
+
+read the alerts
+cat alert
+
+read the log file
+root@internet-host-student-12:/var/log/snort# tcpdump -r snort.log.1688737570 -XXnvv
+
+run snort against a pcap
+root@internet-host-student-12:/etc/snort/rules# snort -r /home/activity_resources/pcaps/ids.pcap -c "normally use the config file. here, we specify a rule to use against the pcap"
 
 
 
