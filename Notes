@@ -1750,7 +1750,7 @@ sudo nft add rule ip TABLE1 FILTER2 tcp dport {ssh, telnet, 3389, 6010-6050} ct 
 
 how to change TTL
 sudo iptables -t mangle -L
-sudo iptables -t mangle -A POSTROUTING -j TTL --ttl -set 255
+sudo iptables -t mangle -A POSTROUTING -j TTL --ttl-set 65
 sudo iptables -t mangle -D POSTROUTING 1
 
 Task 1 IP/NFTables - Host Filtering: T@bl3sth@tF1lt3r
@@ -1829,3 +1829,88 @@ root@internet-host-student-12:/etc/snort/rules# snort -r /home/activity_resource
 
 
 
+
+
+
+Capstone / Review
+START FLAG: crowning achievement
+Floating IP of start pivot is: 10.50.40.226
+student@internet-host-student-12:~$ ssh net3_student12@10.50.40.226 (password12)
+net3_student12@capstone-01:~$ 
+student@internet-host-student-12:/usr/share/cctc$ ls
+autorun.sh  datagram_socket_receiver.py
+student@internet-host-student-12:/usr/share/cctc$ ss -antl
+State     Recv-Q    Send-Q       Local Address:Port        Peer Address:Port    
+LISTEN    0         128                0.0.0.0:80               0.0.0.0:*       
+LISTEN    0         128                0.0.0.0:22               0.0.0.0:*       
+LISTEN    0         128                0.0.0.0:23               0.0.0.0:*       
+LISTEN    0         128              127.0.0.1:6010             0.0.0.0:*       
+LISTEN    0         128                   [::]:80                  [::]:*       
+LISTEN    0         128                      *:21                     *:*       
+LISTEN    0         2                    [::1]:3350                [::]:*       
+LISTEN    0         128                   [::]:22                  [::]:*       
+LISTEN    0         128                  [::1]:6010                [::]:*       
+LISTEN    0         2                        *:3389                   *:*  
+
+To answer these 4 questions, you will need to use tcpdump and BPF's against the capstone-bpf.pcap file.
+
+
+-------------------------------------------------------------------------------
+
+Question 1:
+Using BPF’s, determine how many packets with a DSCP of 26 being sent to the host 10.0.0.103.
+Provide the number of packets converted to BASE64.
+net3_student12@capstone-02:/usr/share/cctc$ tcpdump -n -r capstone-bpf.pcap "dst host 10.0.0.103 && ip[1] >> 2 = 26" | wc -l
+reading from file capstone-bpf.pcap, link-type EN10MB (Ethernet)
+108
+
+-------------------------------------------------------------------------------
+
+Question 2:
+What is the total number of fragmented packets?
+Provide the number of packets converted to BASE64.
+net3_student12@capstone-02:/usr/share/cctc$ tcpdump -n -r capstone-bpf.pcap "((ip[6:2] > 0) and (not ip[6] = 64))" | wc -l
+reading from file capstone-bpf.pcap, link-type EN10MB (Ethernet)
+2729
+
+-------------------------------------------------------------------------------
+
+Question 3:
+How many packets have the DF flag set and has ONLY the RST and FIN TCP Flags set?
+Provide the number of packets converted to BASE64.
+net3_student12@capstone-02:/usr/share/cctc$ tcpdump -n -r capstone-bpf.pcap "ip[6]&0x40!=0 && tcp[13]=5" | wc -l
+reading from file capstone-bpf.pcap, link-type EN10MB (Ethernet)
+109
+
+-------------------------------------------------------------------------------
+
+Question 4:
+An attacker is targeting the host 10.0.0.104 with either a TCP full or half open scan. Based off the pcap, how many ports are open?
+Provide the number of ports converted to BASE64.
+net3_student12@capstone-02:/usr/share/cctc$ tcpdump -n -r capstone-bpf.pcap "src host 10.0.0.104 && tcp[13]=18" | wc -l
+reading from file capstone-bpf.pcap, link-type EN10MB (Ethernet)
+18
+
+-------------------------------------------------------------------------------
+
+tcp listening port waiting for connections
+python3 tcp stream sender and send it through tunnel to say Hi
+message as bytes-like object and decode the response to/from UTF-8 to get encoded message
+
+
+10.50.39.13/32
+
+netN_comradeX
+Netflix.and.Chill
+net3_student12@capstone-01:~$ echo "Netflix and Chill" | base64
+TmV0ZmxpeCBhbmQgQ2hpbGwK
+
+student@internet-host-student-12:~$ ssh net3_student12@10.50.39.13 -p 7777 -L 31200:10.2.2.6:7777 -NT
+
+student@internet-host-student-12:~$ ssh net3_student12@localhost -p 31200 -L 31201:10.2.2.7:23 -NT
+
+net3_comrade12@capstone-07:~$ ssh net3_student12@10.2.2.6 -p 7777 -R 31202:localhost:2222 -NT
+
+student@internet-host-student-12:~$ ssh net3_student12@localhost -p 31200 -L 31203:localhost:31202 -NT
+
+student@internet-host-student-12:~$ ssh -p 31203 net3_comrade12@localhost -D 9050
