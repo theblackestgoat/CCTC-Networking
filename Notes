@@ -1897,6 +1897,7 @@ tcp listening port waiting for connections
 python3 tcp stream sender and send it through tunnel to say Hi
 message as bytes-like object and decode the response to/from UTF-8 to get encoded message
 
+net3_student12@capstone-01:~$ echo "proxychains scp tgt@192.168.1.10:/home/tgt/secret.txt ." | base64
 
 10.50.39.13/32
 
@@ -1905,12 +1906,104 @@ Netflix.and.Chill
 net3_student12@capstone-01:~$ echo "Netflix and Chill" | base64
 TmV0ZmxpeCBhbmQgQ2hpbGwK
 
-student@internet-host-student-12:~$ ssh net3_student12@10.50.39.13 -p 7777 -L 31200:10.2.2.6:7777 -NT
+1) make sure to change iptables to look like a cicso device
 
-student@internet-host-student-12:~$ ssh net3_student12@localhost -p 31200 -L 31201:10.2.2.7:23 -NT
+2) student@internet-host-student-12:~$ ssh net3_student12@10.50.39.13 -p 7777 -L 31200:10.2.2.6:7777 -NT
 
-net3_comrade12@capstone-07:~$ ssh net3_student12@10.2.2.6 -p 7777 -R 31202:localhost:2222 -NT
+3) student@internet-host-student-12:~$ ssh net3_student12@localhost -p 31200 -L 31201:10.2.2.7:23 -NT
 
-student@internet-host-student-12:~$ ssh net3_student12@localhost -p 31200 -L 31203:localhost:31202 -NT
+4) from IH telnet localhost 31201
 
-student@internet-host-student-12:~$ ssh -p 31203 net3_comrade12@localhost -D 9050
+5) net3_comrade12@capstone-07:~$ ssh net3_student12@10.2.2.6 -p 7777 -R 31202:localhost:2222 -NT
+
+6) student@internet-host-student-12:~$ ssh net3_student12@localhost -p 31200 -L 31203:localhost:31202 -NT
+
+7) student@internet-host-student-12:~$ ssh -p 31203 net3_comrade12@localhost -L 31204:10.10.10.140:301 -NT
+
+8) student@internet-host-student-12:~$ ssh -p 31204 net3_student12@localhost -D 9050
+
+9) net3_student12@capstone-12:~$  ip addr (to get ip and cidr)
+
+10) student@internet-host-student-12:~$ proxychains ./scan.sh net 192.168.1 start 96 end 127 ports 21-23 80
+
+11) student@internet-host-student-12:~$ proxychains wget -r ftp://192.168.10.111
+
+12) student@internet-host-student-12:~$ proxychains ssh net3_student12@192.168.10.101
+
+13) net3_student12@capstone-13:~$ cd /usr/share/cctc
+net3_student12@capstone-13:/usr/share/cctc$ ls
+capstone-analysis_HEX-ENCODED.pcap  Flag-13f.txt
+
+14a) student@internet-host-student-12:~$ proxychains scp net3_student12@192.168.10.101:/usr/share/cctc/capstone-analysis_HEX-ENCODED.pcap .
+14b) student@internet-host-student-12:~$ xxd -r capstone-analysis_HEX-ENCODED.pcap capstone.pcap
+14c) student@internet-host-student-12:~$ wireshark
+
+14d) net3_student12@capstone-13:/usr/share/cctc$ cat Flag-13f.txt 
+To answer these 8 questions, you will need extract the capstone-analysis-HEX-Encoded.pcap file that you will need extract, decode with XXD, and open with Wireshark.
+-------------------------------------------------------------------------------
+Question 1:
+Which ip address initiated the attack against the FTP server? 10.1.0.108
+Provide the ip address in the x.x.x.x format and converted to Base64.
+-------------------------------------------------------------------------------
+Question 2:
+How many failed attempts to guess the FTP password? 4
+Provide number and converted to Base64.
+-------------------------------------------------------------------------------
+Question 3:
+What is the correct FTP password? w
+Provide the exact password and converted to Base64.
+-------------------------------------------------------------------------------
+Question 4:
+What is the system IP that was compromised? 10.2.0.2
+Provide the ip address in the x.x.x.x format and converted to Base64.
+-------------------------------------------------------------------------------
+Question 5:
+What is the FTP version? 3.0.2
+Provide the version number only and converted to Base64.
+-------------------------------------------------------------------------------
+Question 6:
+What is the name of the file taken by the attacker? test.txt
+Provide the filename exactly as shown and converted to Base64.
+-------------------------------------------------------------------------------
+Question 7:
+What was the message contained within the extracted file? ftp-data hi
+Provide the message exactly as shown and converted to Base64.
+-------------------------------------------------------------------------------
+Question 8:
+What is the name of the file uploaded by the attacker? company_payroll_2019
+Provide the filename exactly as shown and converted to Base64.
+-------------------------------------------------------------------------------
+
+
+net3_student12@capstone-14:/usr/share/cctc$ cat Flag-14f.txt 
+To answer these s questions, you will need to examine the Snort services running on this system.
+-------------------------------------------------------------------------------
+Question 1:
+How many rule files are on the system?
+Provide the number converted to Base64 as your answer.
+-------------------------------------------------------------------------------
+Question 2:
+How many of the rules are currently in use to match on traffic?
+Provide the number converted to Base64 as your answer.
+-------------------------------------------------------------------------------
+Question 3:
+Which rule will look for someone doing a null scan ?
+Provide only the filename as your answer (i.e. ‘file.rules’) and converted to Base64.
+-------------------------------------------------------------------------------
+Question 4:
+What is the exact Alert Message that is being triggered on the system?
+Convert the exact message as you see it and convert it to Base64 for your answer.
+---------------------------------------------------------------
+Question 5:
+From what IP is the attack coming from?
+Provide your answer in the x.x.x.x format and converted to Base64.
+
+-------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
